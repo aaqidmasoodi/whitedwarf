@@ -33,7 +33,7 @@ class SendOTPView(APIView):
                 if otp:
                     """
                     Do not try to shorten the code that modifes the count,
-                    in many case it can cause a race condition and yeild
+                    in many cases it can causes a race condition and yeild
                     unexpected results.
                     """
                     # update the otp count
