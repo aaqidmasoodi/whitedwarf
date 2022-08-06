@@ -1,17 +1,17 @@
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
-from accounts.serializers import PhoneSerializer, PhoneOTPSerializer
+from accounts import serializers
 from .models import PhoneOTP
 from . import utils
 
 
 class SendOTPView(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         try:
 
-            serializer = PhoneSerializer(data=request.data)
+            serializer = serializers.PhoneSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
             phone = serializer.validated_data["phone"]
@@ -72,11 +72,11 @@ class SendOTPView(APIView):
 
 
 class ValidateOTP(APIView):
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
 
         try:
 
-            serializer = PhoneOTPSerializer(data=request.data)
+            serializer = serializers.PhoneOTPSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
             phone = serializer.validated_data["phone"]
@@ -101,3 +101,15 @@ class ValidateOTP(APIView):
                 {"error": "Internal Server Error"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class UserRegistrationView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = serializers.UserRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {"detail": "Your account have been created sucessfully."},
+            status=status.HTTP_201_CREATED,
+        )

@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "api.apps.ApiConfig",
     "payments.apps.PaymentsConfig",
     "accounts.apps.AccountsConfig",
+    "buses.apps.BusesConfig",
 ]
 
 MIDDLEWARE = [
@@ -49,6 +50,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://10.0.2.2:3000",
 ]
 
 
@@ -101,6 +103,10 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
+}
 
 
 # Internationalization
