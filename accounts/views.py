@@ -1,18 +1,22 @@
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from accounts import serializers
 from .models import PhoneOTP
+from django.contrib.auth import login
 from . import utils
+
+from knox.views import LoginView as KnoxLoginView
+from knox.auth import TokenAuthentication
 
 
 class SendOTPView(APIView):
     def post(self, request, *args, **kwargs):
 
-        try:
+        serializer = serializers.PhoneSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-            serializer = serializers.PhoneSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
+        try:
 
             phone = serializer.validated_data["phone"]
 
@@ -65,6 +69,7 @@ class SendOTPView(APIView):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
+            print(e)
             return Response(
                 {"error": "Internal Server Error"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -74,11 +79,10 @@ class SendOTPView(APIView):
 class ValidateOTP(APIView):
     def post(self, request, *args, **kwargs):
 
+        serializer = serializers.PhoneOTPSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         try:
-
-            serializer = serializers.PhoneOTPSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-
             phone = serializer.validated_data["phone"]
             otp = serializer.validated_data["otp"]
             record = PhoneOTP.objects.filter(phone__iexact=phone).first()
@@ -110,6 +114,19 @@ class UserRegistrationView(APIView):
         serializer.save()
 
         return Response(
-            {"detail": "Your account have been created sucessfully."},
+            serializer.data,
             status=status.HTTP_201_CREATED,
         )
+
+
+class UserLoginView(KnoxLoginView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = serializers.UserLoginSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data["user"]
+        login(request, user)
+        return super().post(request, *args, **kwargs)

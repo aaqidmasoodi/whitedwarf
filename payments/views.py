@@ -56,6 +56,8 @@ def webhook(request):
     elif event and event["type"] == "payment_intent.succeeded":
         payment_intent = event["data"]["object"]  # contains a stripe.PaymentIntent
         print("Payment for {} succeeded".format(payment_intent["amount"]))
+
+        # fullfillment
         # Then define and call a method to handle the successful payment intent.
         # handle_payment_intent_succeeded(payment_intent)
 

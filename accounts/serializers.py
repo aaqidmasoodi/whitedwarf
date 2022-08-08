@@ -1,6 +1,12 @@
-from dataclasses import field
 from rest_framework import serializers
 from accounts.models import User, PhoneOTP
+from django.contrib.auth import authenticate
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "phone", "name"]
 
 
 class PhoneSerializer(serializers.Serializer):
@@ -34,6 +40,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["phone", "name", "password"]
+        extra_kwargs = {
+            "password": {"write_only": True},
+        }
 
     def validate(self, attrs):
 
@@ -60,3 +69,30 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
 
         return user
+
+
+class UserLoginSerializer(serializers.Serializer):
+    phone = serializers.CharField(max_length=10)
+    password = serializers.CharField(
+        max_length=255,
+        style={"input_type": "password"},
+        trim_whitespace=False,
+    )
+
+    def validate(self, attrs):
+
+        user = authenticate(
+            self.context.get("request"),
+            phone=attrs.get("phone"),
+            password=attrs.get("password"),
+        )
+
+        if not user:
+
+            raise serializers.ValidationError(
+                "Could not validate credentials. Try again!"
+            )
+
+        attrs.update({"user": user})
+
+        return attrs

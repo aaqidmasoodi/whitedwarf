@@ -1,6 +1,7 @@
-from pathlib import Path
 import os
+from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
+    "knox",
     "api.apps.ApiConfig",
     "payments.apps.PaymentsConfig",
     "accounts.apps.AccountsConfig",
@@ -52,6 +54,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://10.0.2.2:3000",
 ]
+
+
+# CORS_ALLOW_ALL_ORIGINS = True
 
 
 ROOT_URLCONF = "core.urls"
@@ -105,7 +110,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
-    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
+    "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",),
+    "DEFAULT_AUTHENTICATION_CLASSES": ("knox.auth.TokenAuthentication",),
+}
+
+
+REST_KNOX = {
+    "USER_SERIALIZER": "accounts.serializers.UserSerializer",
+    "TOKEN_TTL": timedelta(hours=24 * 7),
 }
 
 
