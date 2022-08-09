@@ -60,14 +60,6 @@ def webhook(request):
         # fullfillment
         # Then define and call a method to handle the successful payment intent.
         # handle_payment_intent_succeeded(payment_intent)
-
-    elif event["type"] == "charge.succeeded":
-        print("Charge suceeded!.")
-
-    elif event["type"] == "payment_method.attached":
-        payment_method = event["data"]["object"]  # contains a stripe.PaymentMethod
-        # Then define and call a method to handle the successful attachment of a PaymentMethod.
-        # handle_payment_method_attached(payment_method)
     else:
         # Unexpected event type
         print("Unhandled event type {}".format(event["type"]))
