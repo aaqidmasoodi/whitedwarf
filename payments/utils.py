@@ -4,7 +4,7 @@ import jwt
 
 
 def generate_token(user):
-    expiry = datetime.now() + timedelta(seconds=300)
+    expiry = datetime.now() + timedelta(seconds=30)
     token = jwt.encode(
         {"user": user, "exp": expiry},
         SECRET_KEY,
