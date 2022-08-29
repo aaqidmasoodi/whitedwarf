@@ -118,7 +118,7 @@ class ValidateQR(APIView):
             record = PaymentValidationToken.objects.get(user=user.id)
             if record.scanned:
                 return Response(
-                    {"error": "QR Code has already been scanned."},
+                    {"non_field_errors": ["QR Code has already been scanned."]},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             else:
