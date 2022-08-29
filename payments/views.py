@@ -89,6 +89,7 @@ class GenerateQR(APIView):
         if PaymentValidationToken.objects.filter(user=user.id).exists():
             record = PaymentValidationToken.objects.filter(user=user.id).first()
             record.token = qr_payload
+            record.scanned = False
             record.save()
         else:
             serializer = PaymentValidationTokenSerializer(
