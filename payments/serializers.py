@@ -22,8 +22,10 @@ class TokenSerializer(serializers.Serializer):
             attrs["payload"] = payload
 
         except jwt.ExpiredSignatureError:
-            raise serializers.ValidationError("Token has expired. Get a new one.")
+            raise serializers.ValidationError(
+                "This QR Code has expired. Generate a new one."
+            )
         except jwt.InvalidTokenError:
-            raise serializers.ValidationError("Token Invalid.")
+            raise serializers.ValidationError("Invalid QR Code.")
 
         return attrs
