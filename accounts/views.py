@@ -6,6 +6,7 @@ from .models import PhoneOTP
 from django.contrib.auth import login
 from . import utils
 
+
 from knox.views import LoginView as KnoxLoginView
 from knox.auth import TokenAuthentication
 
@@ -27,7 +28,7 @@ class SendOTPView(APIView):
                 if record.count >= 10:
                     return Response(
                         {
-                            "error": "You have exceeded the OTP limit. Please contact support."
+                            "error": "You have exceeded the OTP limit on this number. Please contact ITSS."
                         },
                         status=status.HTTP_409_CONFLICT,
                     )
@@ -85,6 +86,9 @@ class ValidateOTP(APIView):
         try:
             phone = serializer.validated_data["phone"]
             otp = serializer.validated_data["otp"]
+
+            print(phone)
+            print(otp)
             record = PhoneOTP.objects.filter(phone__iexact=phone).first()
 
             if str(otp) == str(record.otp):

@@ -1,10 +1,20 @@
 import os
+from pstats import Stats
 from dotenv import load_dotenv
 import json
 import stripe
-
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status, permissions
+from .models import PaymentValidationToken
+from .serializers import PaymentValidationTokenSerializer
+from payments import serializers
+from . import utils
+from django.contrib.auth import get_user_model
+from accounts.serializers import UserSerializer
+
+User = get_user_model()
 
 load_dotenv()
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
@@ -65,3 +75,58 @@ def webhook(request):
         print("Unhandled event type {}".format(event["type"]))
 
     return Response({"success": True})
+
+
+class GenerateQR(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        QR_TYPE = "CUKBRS"
+        user = request.user
+        token = utils.generate_token(user.phone)
+        qr_payload = f"{QR_TYPE}?{token}"
+
+        if PaymentValidationToken.objects.filter(user=user.id).exists():
+            record = PaymentValidationToken.objects.filter(user=user.id).first()
+            record.token = qr_payload
+            record.save()
+        else:
+            serializer = PaymentValidationTokenSerializer(
+                data={"user": user.id, "token": qr_payload}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+        return Response({"payload": qr_payload}, status=status.HTTP_200_OK)
+
+
+class ValidateQR(APIView):
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+
+        serializer = serializers.TokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        userPhone = serializer.validated_data["payload"]["user"]
+        user = User.objects.filter(phone__iexact=userPhone).first()
+        serializer = UserSerializer(user)
+
+        try:
+            record = PaymentValidationToken.objects.get(user=user.id)
+            if record.scanned:
+                return Response(
+                    {"error": "QR Code has already been scanned."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            else:
+                record.scanned = True
+                record.save()
+        except PaymentValidationToken.DoesNotExist:
+            return Response(
+                {"error": "Could not validate token. Try generating a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response({"data": serializer.data}, status=status.HTTP_202_ACCEPTED)

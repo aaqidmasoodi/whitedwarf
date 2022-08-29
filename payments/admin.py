@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import PaymentValidationToken
 
-# Register your models here.
+
+admin.site.register(PaymentValidationToken)

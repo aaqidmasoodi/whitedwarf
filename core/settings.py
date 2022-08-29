@@ -19,7 +19,7 @@ SECRET_KEY = "django-insecure-#0y16l$lkqykqds)##t3bb36bdf$c7)sefv!&*^wclh_4kl@so
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["10.0.2.2", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["10.0.2.2", "localhost", "127.0.0.1", "192.168.29.50"]
 
 
 # Application definition
@@ -57,6 +57,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://10.0.2.2:3000",
+    "http://192.168.29.50:3000",
 ]
 
 
@@ -93,6 +94,18 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": "papadwarf",
+#         "HOST": "localhost",
+#         "PORT": "3306",
+#         "USER": "root",
+#         "PASSWORD": "Maple_00",
+#     }
+# }
 
 
 # Password validation
