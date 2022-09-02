@@ -1,12 +1,8 @@
+from dataclasses import field
 from rest_framework import serializers
-from accounts.models import User, PhoneOTP
+from accounts.models import User, PhoneOTP, Profile
 from django.contrib.auth import authenticate
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "phone", "name"]
+from buses.serializers import BusSerializer
 
 
 class PhoneSerializer(serializers.Serializer):
@@ -98,11 +94,23 @@ class UserLoginSerializer(serializers.Serializer):
         return attrs
 
 
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["profile_picture"]
+
+
 class UserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+    bus = BusSerializer()
+
     class Meta:
         model = User
-        fields = [
-            "id",
-            "phone",
-            "name",
-        ]
+        fields = ["id", "phone", "name", "profile", "bus"]
+
+
+# will be used to send details about the user along with the payment information
+class UserPublicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "phone", "name"]

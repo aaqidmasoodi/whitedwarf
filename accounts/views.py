@@ -1,14 +1,17 @@
+from webbrowser import get
 from rest_framework.views import APIView
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from accounts import serializers
 from .models import PhoneOTP
 from django.contrib.auth import login
+from django.contrib.auth import get_user_model
 from . import utils
-
-
 from knox.views import LoginView as KnoxLoginView
 from knox.auth import TokenAuthentication
+
+
+User = get_user_model()
 
 
 class SendOTPView(APIView):
@@ -134,3 +137,15 @@ class UserLoginView(KnoxLoginView):
         user = serializer.validated_data["user"]
         login(request, user)
         return super().post(request, *args, **kwargs)
+
+
+class UserInfoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+
+        user = User.objects.get(pk=request.user.id)
+
+        serializer = serializers.UserSerializer(user)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

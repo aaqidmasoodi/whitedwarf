@@ -12,7 +12,7 @@ from .serializers import PaymentValidationTokenSerializer
 from payments import serializers
 from . import utils
 from django.contrib.auth import get_user_model
-from accounts.serializers import UserSerializer
+from accounts.serializers import UserPublicSerializer
 
 User = get_user_model()
 
@@ -112,7 +112,7 @@ class ValidateQR(APIView):
 
         userPhone = serializer.validated_data["payload"]["user"]
         user = User.objects.filter(phone__iexact=userPhone).first()
-        serializer = UserSerializer(user)
+        serializer = UserPublicSerializer(user)
 
         try:
             record = PaymentValidationToken.objects.get(user=user.id)
