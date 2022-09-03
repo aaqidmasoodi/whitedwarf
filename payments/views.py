@@ -1,5 +1,4 @@
 import os
-from pstats import Stats
 from dotenv import load_dotenv
 import json
 import stripe
@@ -14,7 +13,9 @@ from . import utils
 from django.contrib.auth import get_user_model
 from accounts.serializers import UserPublicSerializer
 
+
 User = get_user_model()
+
 
 load_dotenv()
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
