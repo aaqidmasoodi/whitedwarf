@@ -17,7 +17,7 @@ API_CUKBRS_VERSION = 1.0
 SECRET_KEY = "django-insecure-#0y16l$lkqykqds)##t3bb36bdf$c7)sefv!&*^wclh_4kl@so"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["10.0.2.2", "localhost", "127.0.0.1", "192.168.29.50"]
 

@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from rest_framework.views import APIView
 from .models import PaymentValidationToken
 from .serializers import PaymentValidationTokenSerializer
 from payments import serializers
@@ -22,60 +23,64 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 
-@api_view(["POST"])
-def create_payment(request):
-    try:
-        # data = json.loads(request.body)
-        intent = stripe.PaymentIntent.create(
-            amount=140000,
-            currency="INR",
-            automatic_payment_methods={
-                "enabled": True,
-            },
-        )
-        return Response({"clientSecret": intent["client_secret"]})
-    except Exception as e:
-        return Response({"error": str(e)})
+class CreatePaymentIntent(APIView):
+    def post(self, request, *args, **kwargs):
 
+        print("using this...")
 
-@api_view(["POST"])
-def webhook(request):
-    event = None
-    payload = request.body
-
-    try:
-        event = json.loads(payload)
-    except Exception as e:
-        print("Webhook error while parsing basic request." + str(e))
-        return Response({"success": False})
-
-    if endpoint_secret:
-        sig_header = request.headers.get("stripe-signature")
         try:
-            event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+            intent = stripe.PaymentIntent.create(
+                amount=140000,
+                currency="INR",
+                automatic_payment_methods={
+                    "enabled": True,
+                },
+            )
+            return Response({"clientSecret": intent["client_secret"]})
+        except Exception as e:
+            return Response({"error": str(e)})
 
-            # print(event)
-        except stripe.error.SignatureVerificationError as e:
-            print("Webhook signature verification failed." + str(e))
+
+class PaymentWebhook(APIView):
+    def post(self, request, *args, **kwargs):
+        event = None
+        payload = request.body
+
+        try:
+            event = json.loads(payload)
+        except Exception as e:
+            print("Webhook error while parsing basic request." + str(e))
             return Response({"success": False})
 
-    # Handle the events
+        if endpoint_secret:
+            sig_header = request.headers.get("stripe-signature")
+            try:
+                event = stripe.Webhook.construct_event(
+                    payload, sig_header, endpoint_secret
+                )
 
-    if event["type"] == "payment_intent.created":
-        print("Payment Intent was created sucessfully.")
+                # print(event)
+            except stripe.error.SignatureVerificationError as e:
+                print("Webhook signature verification failed." + str(e))
+                return Response({"success": False})
 
-    elif event and event["type"] == "payment_intent.succeeded":
-        payment_intent = event["data"]["object"]  # contains a stripe.PaymentIntent
-        print("Payment for {} succeeded".format(payment_intent["amount"]))
+        # Handle the events
 
-        # fullfillment
-        # Then define and call a method to handle the successful payment intent.
-        # handle_payment_intent_succeeded(payment_intent)
-    else:
-        # Unexpected event type
-        print("Unhandled event type {}".format(event["type"]))
+        if event["type"] == "payment_intent.created":
+            print("Payment Intent was created sucessfully.")
 
-    return Response({"success": True})
+        elif event and event["type"] == "payment_intent.succeeded":
+            payment_intent = event["data"]["object"]  # contains a stripe.PaymentIntent
+            print("Payment for {} succeeded".format(payment_intent["amount"]))
+
+            # fullfillment
+            # Then define and call a method to handle the successful payment intent.
+            # handle_payment_intent_succeeded(payment_intent)
+        else:
+            # Unexpected event type
+            print("Unhandled event type {}".format(event["type"]))
+
+        return Response({"success": True})
 
 
 class GenerateQR(APIView):

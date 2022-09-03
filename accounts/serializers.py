@@ -111,6 +111,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 # will be used to send details about the user along with the payment information
 class UserPublicSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+
     class Meta:
         model = User
-        fields = ["id", "phone", "name"]
+        fields = ["id", "phone", "name", "profile"]
