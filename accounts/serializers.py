@@ -106,7 +106,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "phone", "name", "profile", "bus"]
+        fields = [
+            "id",
+            "is_driver",
+            "is_coordinator",
+            "phone",
+            "name",
+            "profile",
+            "bus",
+        ]
 
 
 # will be used to send details about the user along with the payment information

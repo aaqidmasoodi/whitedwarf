@@ -40,7 +40,10 @@ class User(AbstractBaseUser):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
+    is_driver = models.BooleanField(default=False)
+    is_coordinator = models.BooleanField(default=False)
     is_first_login = models.BooleanField(default=True)
+
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
 

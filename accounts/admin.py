@@ -5,13 +5,16 @@ from .models import PhoneOTP, Profile
 
 
 class UserModelAdmin(BaseUserAdmin):
-    list_display = ("id", "phone", "name", "is_admin")
-    list_filter = ("is_admin",)
+    list_display = ("id", "phone", "name", "is_coordinator", "is_driver")
+    list_filter = ("is_admin", "is_driver", "is_coordinator")
     fieldsets = (
         ("User Credentials", {"fields": ("phone", "password")}),
         ("Bus Details", {"fields": ("bus",)}),
         ("Personal info", {"fields": ("name",)}),
-        ("Permissions", {"fields": ("is_admin",)}),
+        (
+            "Permissions",
+            {"fields": ("is_admin", "is_staff", "is_driver", "is_coordinator")},
+        ),
     )
 
     add_fieldsets = (
