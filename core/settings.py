@@ -74,7 +74,6 @@ CSRF_TRUSTED_ORIGINS = ["https://cukbrs.herokuapp.com", "https://*.127.0.0.1"]
 
 # CORS_ALLOW_ALL_ORIGINS = True
 
-
 ROOT_URLCONF = "core.urls"
 ASGI_APPLICATION = "core.asgi.application"
 
@@ -196,19 +195,12 @@ AWS_DEFAULT_ACL = None
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
 
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [("localhost", 6379)],
-#         },
-#     },
-# }
-
-
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
     },
 }
 
