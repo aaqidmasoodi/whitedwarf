@@ -70,6 +70,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
+CSRF_TRUSTED_ORIGINS = ["https://cukbrs.herokuapp.com", "https://*.127.0.0.1"]
+
 # CORS_ALLOW_ALL_ORIGINS = True
 
 
