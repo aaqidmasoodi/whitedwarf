@@ -18,6 +18,10 @@ class LiveLocationConsumer(AsyncConsumer):
             }
         )
 
+    @database_sync_to_async
+    def get_location_broadcast_id(self, user):
+        pass
+
     async def websocket_receive(self, event):
         print("Message Recieved")
         print(event["text"])
