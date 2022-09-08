@@ -3,12 +3,17 @@ from django.db import models
 
 # New Buses will be added using the admin site
 class Bus(models.Model):
-    number = models.PositiveIntegerField()
-    plate_number = models.CharField(max_length=255, default=0)
+    number = models.PositiveIntegerField(unique=True)
+    plate_number = models.CharField(max_length=255, unique=True)
     seats = models.PositiveIntegerField()
-    start = models.CharField(max_length=1024, blank=True, null=True)
-    destination = models.CharField(max_length=1024, blank=True, null=True)
+    start = models.CharField(max_length=1024)
+    destination = models.CharField(max_length=1024)
     fee = models.FloatField(default=0.00)
+    location_broadcast_id = models.CharField(max_length=12, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.location_broadcast_id = f"CUKBRS00{self.number}"
+        super().save()
 
     def __str__(self):
 
