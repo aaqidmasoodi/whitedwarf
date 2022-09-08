@@ -1,5 +1,6 @@
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
+from channels.db import database_sync_to_async
 
 
 class LiveLocationConsumer(AsyncConsumer):
