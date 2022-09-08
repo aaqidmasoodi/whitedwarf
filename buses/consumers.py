@@ -1,22 +1,15 @@
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
-from django.contrib.auth import get_user_model
-from channels.db import database_sync_to_async
-
-User = get_user_model()
 
 
 class LiveLocationConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
-        self.user = self.scope["user"]
-        print("User", self.user.name, "connected...")
-
-        self.location_broadcast_id = await self.get_location_broadcast_id(self.user)
-        if self.location_broadcast_id:
-            await self.channel_layer.group_add(
-                self.location_broadcast_id,
-                self.channel_name,
-            )
+        user = self.scope["user"]
+        print("User", user.name, "connected...")
+        await self.channel_layer.group_add(
+            "test_group",
+            self.channel_name,
+        )
 
         await self.send(
             {
@@ -25,13 +18,14 @@ class LiveLocationConsumer(AsyncConsumer):
         )
 
     async def websocket_receive(self, event):
-        print("Message Recieved from", self.user)
+        print("Message Recieved")
         print(event["text"])
+        user = self.scope["user"]
 
-        if self.user.is_driver:
+        if user.is_driver:
             print("sending to others...")
             await self.channel_layer.group_send(
-                self.location_broadcast_id,
+                "test_group",
                 {
                     "type": "live.location",
                     "message": event["text"],
@@ -49,20 +43,8 @@ class LiveLocationConsumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         print("DISCONNECTED.")
         await self.channel_layer.group_discard(
-            self.location_broadcast_id,
+            "test_group",
             self.channel_name,
         )
 
         raise StopConsumer()
-
-    @database_sync_to_async
-    def get_location_broadcast_id(self, user):
-        try:
-            location_broadcast_id = (
-                User.objects.select_related("bus")
-                .get(id=user.id)
-                .bus.location_broadcast_id
-            )
-            return location_broadcast_id
-        except:
-            return None
