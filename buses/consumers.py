@@ -7,13 +7,15 @@ from channels.db import database_sync_to_async
 
 class LiveLocationConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
-        user = self.scope["user"]
-        print("User", user.name, "connected...")
-        self.get_location_broadcast_id(user)
-        await self.channel_layer.group_add(
-            "test_group",
-            self.channel_name,
-        )
+        self.user = self.scope["user"]
+        print("User", self.user.name, "connected...")
+        self.location_broadcast_id = self.get_location_broadcast_id(user)
+
+        if self.location_broadcast_id:
+            await self.channel_layer.group_add(
+                self.location_broadcast_id,
+                self.channel_name,
+            )
 
         await self.send(
             {
@@ -23,17 +25,16 @@ class LiveLocationConsumer(AsyncConsumer):
 
     @database_sync_to_async
     def get_location_broadcast_id(self, user):
-        pass
+        return "CUKBRS005"
 
     async def websocket_receive(self, event):
         print("Message Recieved")
         print(event["text"])
-        user = self.scope["user"]
 
-        if user.is_driver:
+        if self.user.is_driver:
             print("sending to others...")
             await self.channel_layer.group_send(
-                "test_group",
+                self.location_broadcast_id,
                 {
                     "type": "live.location",
                     "message": event["text"],
@@ -51,7 +52,7 @@ class LiveLocationConsumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         print("DISCONNECTED.")
         await self.channel_layer.group_discard(
-            "test_group",
+            self.location_broadcast_id,
             self.channel_name,
         )
 
