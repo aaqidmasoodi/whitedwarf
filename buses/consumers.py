@@ -2,18 +2,17 @@ from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 from channels.db import database_sync_to_async
 
+# from accounts.models import User
+
 
 class LiveLocationConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
-        self.user = self.scope["user"]
-        print("User", self.user.name, "connected...")
-
-        self.location_broadcast_id = await self.get_location_broadcast_id(self.user)
-        if self.location_broadcast_id:
-            await self.channel_layer.group_add(
-                self.location_broadcast_id,
-                self.channel_name,
-            )
+        user = self.scope["user"]
+        print("User", user.name, "connected...")
+        await self.channel_layer.group_add(
+            "test_group",
+            self.channel_name,
+        )
 
         await self.send(
             {
@@ -21,14 +20,19 @@ class LiveLocationConsumer(AsyncConsumer):
             }
         )
 
-    async def websocket_receive(self, event):
-        print("Message Recieved from", self.user)
-        print(event["text"])
+    @database_sync_to_async
+    def get_location_broadcast_id(self, user):
+        pass
 
-        if self.user.is_driver:
+    async def websocket_receive(self, event):
+        print("Message Recieved")
+        print(event["text"])
+        user = self.scope["user"]
+
+        if user.is_driver:
             print("sending to others...")
             await self.channel_layer.group_send(
-                self.location_broadcast_id,
+                "test_group",
                 {
                     "type": "live.location",
                     "message": event["text"],
@@ -46,20 +50,8 @@ class LiveLocationConsumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         print("DISCONNECTED.")
         await self.channel_layer.group_discard(
-            self.location_broadcast_id,
+            "test_group",
             self.channel_name,
         )
 
         raise StopConsumer()
-
-    @database_sync_to_async
-    def get_location_broadcast_id(self, user):
-        try:
-            location_broadcast_id = (
-                User.objects.select_related("bus")
-                .get(id=user.id)
-                .bus.location_broadcast_id
-            )
-            return location_broadcast_id
-        except:
-            return None
