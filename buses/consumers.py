@@ -2,7 +2,7 @@ from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 from channels.db import database_sync_to_async
 
-# from accounts.models import User
+from accounts.models import User
 
 
 class LiveLocationConsumer(AsyncConsumer):
