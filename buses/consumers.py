@@ -9,6 +9,7 @@ class LiveLocationConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         user = self.scope["user"]
         print("User", user.name, "connected...")
+        self.get_location_broadcast_id(user)
         await self.channel_layer.group_add(
             "test_group",
             self.channel_name,
