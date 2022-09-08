@@ -1,20 +1,20 @@
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 from channels.db import database_sync_to_async
-from django.contrib.auth import get_user_model
-
-
-# User = get_user_model()
+from accounts.models import User
 
 
 class LiveLocationConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
-        user = self.scope["user"]
-        print("User", user.name, "connected...")
-        await self.channel_layer.group_add(
-            "test_group",
-            self.channel_name,
-        )
+        self.user = self.scope["user"]
+        print("User", self.user.name, "connected...")
+
+        self.location_broadcast_id = await self.get_location_broadcast_id(self.user)
+        if self.location_broadcast_id:
+            await self.channel_layer.group_add(
+                self.location_broadcast_id,
+                self.channel_name,
+            )
 
         await self.send(
             {
@@ -24,17 +24,24 @@ class LiveLocationConsumer(AsyncConsumer):
 
     @database_sync_to_async
     def get_location_broadcast_id(self, user):
-        pass
+        try:
+            location_broadcast_id = (
+                User.objects.select_related("bus")
+                .get(id=user.id)
+                .bus.location_broadcast_id
+            )
+            return location_broadcast_id
+        except:
+            return None
 
     async def websocket_receive(self, event):
-        print("Message Recieved")
+        print("Message Recieved from", self.user)
         print(event["text"])
-        user = self.scope["user"]
 
-        if user.is_driver:
+        if self.user.is_driver:
             print("sending to others...")
             await self.channel_layer.group_send(
-                "test_group",
+                self.location_broadcast_id,
                 {
                     "type": "live.location",
                     "message": event["text"],
@@ -52,7 +59,7 @@ class LiveLocationConsumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         print("DISCONNECTED.")
         await self.channel_layer.group_discard(
-            "test_group",
+            self.location_broadcast_id,
             self.channel_name,
         )
 
