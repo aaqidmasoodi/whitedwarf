@@ -1,7 +1,6 @@
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 from channels.db import database_sync_to_async
-from accounts.models import User
 
 
 class LiveLocationConsumer(AsyncConsumer):
@@ -21,18 +20,6 @@ class LiveLocationConsumer(AsyncConsumer):
                 "type": "websocket.accept",
             }
         )
-
-    @database_sync_to_async
-    def get_location_broadcast_id(self, user):
-        try:
-            location_broadcast_id = (
-                User.objects.select_related("bus")
-                .get(id=user.id)
-                .bus.location_broadcast_id
-            )
-            return location_broadcast_id
-        except:
-            return None
 
     async def websocket_receive(self, event):
         print("Message Recieved from", self.user)
@@ -64,3 +51,15 @@ class LiveLocationConsumer(AsyncConsumer):
         )
 
         raise StopConsumer()
+
+    @database_sync_to_async
+    def get_location_broadcast_id(self, user):
+        try:
+            location_broadcast_id = (
+                User.objects.select_related("bus")
+                .get(id=user.id)
+                .bus.location_broadcast_id
+            )
+            return location_broadcast_id
+        except:
+            return None
