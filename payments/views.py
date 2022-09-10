@@ -2,7 +2,6 @@ import os
 from dotenv import load_dotenv
 import json
 import stripe
-from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
@@ -24,17 +23,25 @@ endpoint_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 
 class CreatePaymentIntent(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
 
         print("using this...")
+        print(request.user)
+
+        payload = json.loads(request.body)
+        bus_fare = int(payload["busFare"] * 100)
+        metadata = payload["metadata"]
 
         try:
             intent = stripe.PaymentIntent.create(
-                amount=140000,
+                amount=bus_fare,
                 currency="INR",
                 automatic_payment_methods={
                     "enabled": True,
                 },
+                metadata=metadata,
             )
             return Response({"clientSecret": intent["client_secret"]})
         except Exception as e:
@@ -43,6 +50,8 @@ class CreatePaymentIntent(APIView):
 
 class PaymentWebhook(APIView):
     def post(self, request, *args, **kwargs):
+
+        print(str(request))
         event = None
         payload = request.body
 
@@ -59,25 +68,30 @@ class PaymentWebhook(APIView):
                     payload, sig_header, endpoint_secret
                 )
 
-                # print(event)
             except stripe.error.SignatureVerificationError as e:
                 print("Webhook signature verification failed." + str(e))
                 return Response({"success": False})
 
         # Handle the events
 
-        if event["type"] == "payment_intent.created":
+        if event and event["type"] == "payment_intent.created":
             print("Payment Intent was created sucessfully.")
 
         elif event and event["type"] == "payment_intent.succeeded":
             payment_intent = event["data"]["object"]  # contains a stripe.PaymentIntent
-            print("Payment for {} succeeded".format(payment_intent["amount"]))
 
-            # fullfillment
-            # Then define and call a method to handle the successful payment intent.
-            # handle_payment_intent_succeeded(payment_intent)
+            if utils.handle_payment(payment_intent):
+                print("Payment for {} succeeded".format(payment_intent["amount"]))
+
+            else:
+
+                return Response({"success": False})
+
+        elif event and event["type"] == "charge.succeeded":
+            print("Charge succeeded.")
+
         else:
-            # Unexpected event type
+
             print("Unhandled event type {}".format(event["type"]))
 
         return Response({"success": True})

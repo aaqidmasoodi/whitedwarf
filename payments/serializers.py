@@ -1,5 +1,7 @@
+from dataclasses import field
+from pyexpat import model
 from rest_framework import serializers
-from .models import PaymentValidationToken
+from .models import PaymentValidationToken, SeatReservationStatus
 from core.settings import SECRET_KEY
 from datetime import datetime, timedelta
 import jwt
@@ -29,3 +31,12 @@ class TokenSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid QR Code.")
 
         return attrs
+
+
+class SeatReservationStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SeatReservationStatus
+        fields = [
+            "status",
+            "days_left",
+        ]

@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.contrib.auth import get_user_model
 from django.dispatch import receiver
 from accounts.models import Profile
-
+from payments.models import SeatReservationStatus
 
 User = get_user_model()
 
@@ -16,3 +16,14 @@ def create_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+
+@receiver(post_save, sender=User)
+def create_seat_reservation_status(sender, instance, created, **kwargs):
+    if created:
+        SeatReservationStatus.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_seat_reservation_status(sender, instance, **kwargs):
+    instance.seatreservationstatus.save()

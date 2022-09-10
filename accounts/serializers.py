@@ -1,8 +1,8 @@
-from dataclasses import field
 from rest_framework import serializers
 from accounts.models import User, PhoneOTP, Profile
 from django.contrib.auth import authenticate
 from buses.serializers import BusSerializer
+from payments.serializers import SeatReservationStatusSerializer
 
 
 class PhoneSerializer(serializers.Serializer):
@@ -62,6 +62,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        # do not touch this yet... i have to add more things here...
         user = User.objects.create_user(**validated_data)
 
         return user
@@ -100,9 +101,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ["profile_picture"]
 
 
+# Main User Serializer
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
     bus = BusSerializer()
+    seatreservationstatus = SeatReservationStatusSerializer()
 
     class Meta:
         model = User
@@ -114,6 +117,7 @@ class UserSerializer(serializers.ModelSerializer):
             "name",
             "profile",
             "bus",
+            "seatreservationstatus",
         ]
 
 

@@ -1,5 +1,20 @@
 from django.contrib import admin
-from .models import PaymentValidationToken
+from .models import PaymentValidationToken, SeatReservationStatus, Payment
 
 
-admin.site.register(PaymentValidationToken)
+@admin.register(PaymentValidationToken)
+class PaymentValidationTokenAdmin(admin.ModelAdmin):
+
+    readonly_fields = ["user", "token", "scanned"]
+
+
+@admin.register(SeatReservationStatus)
+class SeatReservationStatusAdmin(admin.ModelAdmin):
+
+    readonly_fields = ["user", "bus", "token"]
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+
+    readonly_fields = ["user", "bus", "payment_date", "amount"]
