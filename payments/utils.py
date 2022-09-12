@@ -57,7 +57,7 @@ def handle_payment(payment_intent):
             card_last4=card_brand_last_4_digits,
         ).save()
 
-        reservation_token = generate_reservation_token(payment_date)
+        reservation_token = generate_reservation_token()
 
         try:
             record = SeatReservationStatus.objects.filter(user=user).first()
