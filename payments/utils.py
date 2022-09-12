@@ -18,10 +18,10 @@ def generate_token(user):
     return token
 
 
-def generate_reservation_token(payment_date):
-    expiry = payment_date + timedelta(days=5)
+def generate_reservation_token():
+    expiry = datetime.now() + timedelta(seconds=300)
     token = jwt.encode(
-        {"exp": expiry},
+        {"Token": "CUKBRSPAYMENT", "exp": expiry},
         SECRET_KEY,
         algorithm="HS256",
     )
