@@ -59,7 +59,8 @@ class PaymentWebhook(APIView):
         payload = request.body
 
         try:
-            event = json.loads(payload)
+            # event = json.loads(payload)
+            event = payload
         except Exception as e:
             print("Webhook error while parsing basic request." + str(e))
             return Response({"success": False})
