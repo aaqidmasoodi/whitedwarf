@@ -35,12 +35,26 @@ def handle_payment(payment_intent):
         amount = payment_intent["amount"] / 100
         metadata = payment_intent["metadata"]
         epoch = payment_intent["created"]
-
         payment_date = datetime.fromtimestamp(epoch)
+        transaction_id = payment_intent["charges"]["data"][0]["balance_transaction"]
+        card_brand = payment_intent["charges"]["data"][0]["payment_method_details"][
+            "card"
+        ]["brand"]
+        card_brand_last_4_digits = payment_intent["charges"]["data"][0][
+            "payment_method_details"
+        ]["card"]["last4"]
+
         user = User.objects.get(id=metadata["userID"])
 
         Payment.objects.create(
-            user=user, bus=user.bus, payment_date=payment_date, amount=amount
+            user=user,
+            bus=user.bus,
+            payment_date=payment_date,
+            amount=amount,
+            transaction_id=transaction_id,
+            payment_method="card",
+            card_brand=card_brand,
+            card_last4=card_brand_last_4_digits,
         ).save()
 
         reservation_token = generate_reservation_token(payment_date)

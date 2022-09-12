@@ -1,10 +1,13 @@
 from dataclasses import field
-from pyexpat import model
 from rest_framework import serializers
-from .models import PaymentValidationToken, SeatReservationStatus
+from .models import Payment, PaymentValidationToken, SeatReservationStatus
 from core.settings import SECRET_KEY
-from datetime import datetime, timedelta
+from django.contrib.auth import get_user_model
+from buses.models import Bus
 import jwt
+
+
+User = get_user_model()
 
 
 class PaymentValidationTokenSerializer(serializers.ModelSerializer):
@@ -39,4 +42,56 @@ class SeatReservationStatusSerializer(serializers.ModelSerializer):
         fields = [
             "status",
             "days_left",
+            "expiry_date",
         ]
+
+
+# this one is used to serialize the users last payment with minimal information
+class LastPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ["payment_date", "amount"]
+
+
+"""
+    PAYMENT LIST SERIALIZERS START
+    ++++++++++++++++++++++++++++++
+"""
+
+# this serializer is used to expand the user field in on the payment object
+class PaymentUserFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["name"]
+
+
+class PaymentBusFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bus
+        fields = ["number"]
+
+
+# this one i have used to provide detailed info about the payments in llst view
+class PaymentSerializer(serializers.ModelSerializer):
+    user = PaymentUserFieldSerializer()
+    bus = PaymentBusFieldSerializer()
+
+    class Meta:
+        model = Payment
+        fields = [
+            "id",
+            "user",
+            "bus",
+            "payment_date",
+            "amount",
+            "payment_method",
+            "transaction_id",
+            "card_brand",
+            "card_last4",
+        ]
+
+
+"""
+    ++++++++++++++++++++++++++++
+    PAYMENT LIST SERIALIZERS END
+"""

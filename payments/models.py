@@ -33,6 +33,14 @@ class SeatReservationStatus(models.Model):
     def status(self):
         return self.get_reservation_status()
 
+    @property
+    def days_left(self):
+        return self.get_days_left()
+
+    @property
+    def expiry_date(self):
+        return self.get_expiry_date()
+
     def get_reservation_status(self):
         if not self.token:
             return False
@@ -45,8 +53,7 @@ class SeatReservationStatus(models.Model):
         except jwt.InvalidTokenError:
             return False
 
-    @property
-    def days_left(self):
+    def get_days_left(self):
         if not self.token:
             return 0
 
@@ -64,16 +71,34 @@ class SeatReservationStatus(models.Model):
         except jwt.InvalidTokenError:
             return 0
 
+    def get_expiry_date(self):
+        if not self.token:
+            return None
+
+        try:
+            payload = jwt.decode(self.token, SECRET_KEY, algorithms=["HS256"])
+            expiry = datetime.fromtimestamp(payload["exp"])
+            return expiry
+
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.InvalidTokenError:
+            return None
+
     def __str__(self):
         return f"{self.user.name} Reservation Status"
 
 
 class Payment(models.Model):
 
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    bus = models.ForeignKey(Bus, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    bus = models.ForeignKey(Bus, on_delete=models.CASCADE, null=True)
     payment_date = models.DateTimeField()
     amount = models.FloatField()
+    transaction_id = models.CharField(max_length=255)
+    payment_method = models.CharField(max_length=255)
+    card_brand = models.CharField(max_length=255)
+    card_last4 = models.CharField(max_length=4)
 
     def __str__(self):
         return f"{self.user.name}-{self.amount}"

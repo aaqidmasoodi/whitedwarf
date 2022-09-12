@@ -2,7 +2,8 @@ from rest_framework import serializers
 from accounts.models import User, PhoneOTP, Profile
 from django.contrib.auth import authenticate
 from buses.serializers import BusSerializer
-from payments.serializers import SeatReservationStatusSerializer
+from payments.serializers import LastPaymentSerializer, SeatReservationStatusSerializer
+from payments.models import Payment
 
 
 class PhoneSerializer(serializers.Serializer):
@@ -106,6 +107,7 @@ class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
     bus = BusSerializer()
     seatreservationstatus = SeatReservationStatusSerializer()
+    last_payment = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -118,7 +120,17 @@ class UserSerializer(serializers.ModelSerializer):
             "profile",
             "bus",
             "seatreservationstatus",
+            "last_payment",
         ]
+
+    def get_last_payment(self, obj):
+
+        try:
+            last_payment = Payment.objects.filter(user=obj).latest("payment_date")
+            serializer = LastPaymentSerializer(last_payment)
+            return serializer.data
+        except:
+            return None
 
 
 # will be used to send details about the user along with the payment information

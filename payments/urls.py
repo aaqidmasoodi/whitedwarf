@@ -11,4 +11,5 @@ urlpatterns = [
     path("webhook/", views.PaymentWebhook.as_view(), name="stripe-webhook"),
     path("generate-qr/", views.GenerateQR.as_view(), name="generate-qr"),
     path("validate-qr/", views.ValidateQR.as_view(), name="validate-qr"),
+    path("", views.UserPaymentListView.as_view(), name="user-payments"),
 ]

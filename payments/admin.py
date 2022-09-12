@@ -17,4 +17,13 @@ class SeatReservationStatusAdmin(admin.ModelAdmin):
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
 
-    readonly_fields = ["user", "bus", "payment_date", "amount"]
+    readonly_fields = [
+        "user",
+        "bus",
+        "payment_date",
+        "amount",
+        "payment_method",
+        "transaction_id",
+        "card_brand",
+        "card_last4",
+    ]

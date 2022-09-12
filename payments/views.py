@@ -7,11 +7,14 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from .models import PaymentValidationToken
-from .serializers import PaymentValidationTokenSerializer
+from .serializers import PaymentSerializer, PaymentValidationTokenSerializer
 from payments import serializers
 from . import utils
 from django.contrib.auth import get_user_model
 from accounts.serializers import UserPublicSerializer
+from rest_framework.mixins import ListModelMixin
+from rest_framework.generics import GenericAPIView
+from payments.models import Payment
 
 
 User = get_user_model()
@@ -155,3 +158,19 @@ class ValidateQR(APIView):
             )
 
         return Response({"data": serializer.data}, status=status.HTTP_202_ACCEPTED)
+
+
+class UserPaymentListView(ListModelMixin, GenericAPIView):
+
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        user = request.user
+        queryset = self.get_queryset().filter(user=user).order_by("-payment_date")
+        serializer = PaymentSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
