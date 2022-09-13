@@ -2,6 +2,7 @@ from rest_framework import permissions, status
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from rest_framework.mixins import ListModelMixin
+from accounts.serializers import UserPublicSerializer
 from buses.models import Bus
 from buses.serializers import BusAllocationSerializer, BusSerializer
 from django.contrib.auth import get_user_model
@@ -43,3 +44,18 @@ class BusAllocateView(APIView):
             )
 
         return Response({"status": True}, status=status.HTTP_202_ACCEPTED)
+
+
+class BusMembersListView(ListModelMixin, GenericAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserPublicSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        bus = request.user.bus
+        queryset = self.get_queryset().filter(bus=bus).exclude(id=request.user.id)
+        serializer = UserPublicSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)

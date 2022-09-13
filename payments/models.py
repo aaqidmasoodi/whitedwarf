@@ -88,6 +88,9 @@ class SeatReservationStatus(models.Model):
     def __str__(self):
         return f"{self.user.name} Reservation Status"
 
+    class Meta:
+        verbose_name_plural = "Seat Reservation Statuses"
+
 
 class Payment(models.Model):
 

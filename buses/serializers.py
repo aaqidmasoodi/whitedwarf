@@ -15,6 +15,7 @@ class BusSerializer(serializers.ModelSerializer):
             "plate_number",
             "destination",
             "fee",
+            "reserved_seats",
         ]
 
 

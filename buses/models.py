@@ -1,5 +1,9 @@
 from django.db import models
 
+# from django.contrib.auth import get_user_model
+
+
+# User = get_user_model()
 
 # New Buses will be added using the admin site
 class Bus(models.Model):
@@ -10,6 +14,11 @@ class Bus(models.Model):
     destination = models.CharField(max_length=1024)
     fee = models.FloatField(default=0.00)
     location_broadcast_id = models.CharField(max_length=12, unique=True, blank=True)
+
+    @property
+    def reserved_seats(self):
+        reservations = list(self.seatreservationstatus_set.all())
+        return len([active for active in reservations if active.status == True])
 
     def save(self, *args, **kwargs):
         self.location_broadcast_id = f"CUKBRS00{self.number}"

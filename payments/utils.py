@@ -18,8 +18,12 @@ def generate_token(user):
     return token
 
 
+# you reservation has expired but has kept
+#
+
+
 def generate_reservation_token():
-    expiry = datetime.now() + timedelta(seconds=60)
+    expiry = datetime.now() + timedelta(seconds=120)
     token = jwt.encode(
         {"Token": "CUKBRSPAYMENT", "exp": expiry},
         SECRET_KEY,
